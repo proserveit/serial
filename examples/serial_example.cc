@@ -173,9 +173,63 @@ int run(int argc, char **argv)
   return 0;
 }
 
+int Simpletest() {
+#include <windows.h>
+
+    /* ... */
+
+
+    // Open serial port
+    HANDLE serialHandle;
+
+    serialHandle = CreateFile("\\\\.\\COM7", GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+    // Do some basic settings
+    DCB serialParams = { 0 };
+    serialParams.DCBlength = sizeof(serialParams);
+
+    GetCommState(serialHandle, &serialParams);
+    serialParams.BaudRate = 9600;
+    serialParams.ByteSize = 8;
+    serialParams.StopBits = ONESTOPBIT;
+    serialParams.Parity = NOPARITY;
+    SetCommState(serialHandle, &serialParams);
+
+    // Set timeouts
+    COMMTIMEOUTS timeout = { 0 };
+    timeout.ReadIntervalTimeout = 50;
+    timeout.ReadTotalTimeoutConstant = 50;
+    timeout.ReadTotalTimeoutMultiplier = 50;
+    timeout.WriteTotalTimeoutConstant = 50;
+    timeout.WriteTotalTimeoutMultiplier = 10;
+
+    SetCommTimeouts(serialHandle, &timeout);
+
+    bool quit = false;
+    DWORD charCode;    
+    char writeBuffer[3];
+    int writeBufferLength = ARRAYSIZE(writeBuffer);
+    memset(writeBuffer, 0, writeBufferLength);
+    
+    writeBuffer[writeBufferLength - 3] = 0x1E;
+    writeBuffer[writeBufferLength - 2] = 0x50;
+    writeBuffer[writeBufferLength - 1] = 0x08;
+    int numBytesToWrite = writeBufferLength;
+    DWORD numBytesWritten = 0;
+    
+    WriteFile(serialHandle, writeBuffer, numBytesToWrite, &numBytesWritten, NULL);
+        
+    CloseHandle(serialHandle);
+
+
+    
+    return 1;
+}
+
 int main(int argc, char **argv) {
   try {
-    return run(argc, argv);
+    //return run(argc, argv);
+      return Simpletest();
   } catch (exception &e) {
     cerr << "Unhandled Exception: " << e.what() << endl;
   }
